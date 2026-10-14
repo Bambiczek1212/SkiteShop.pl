@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="pl" class="h-full bg-slate-100 text-slate-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkiteShop Studio - Kreator Sklepów Internetowych</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        .hero-gradient { background: linear-gradient(135deg, rgba(2,132,199,0.08) 0%, rgba(241,245,249,1) 100%); }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-100 text-slate-800 flex flex-col overflow-hidden">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-slate-200 bg-white px-4 lg:px-8 flex items-center justify-between z-30 shrink-0 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md">
+                <i class="fa-solid fa-store text-lg"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-slate-900 text-base tracking-tight">SkiteShop Studio</h1>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold border border-blue-200">Kreator v3.2</span>
+                </div>
+                <p class="text-xs text-slate-500 hidden sm:block">Zbuduj, dostosuj i uruchom swój e-sklep</p>
+            </div>
+        </div>
+
+        <!-- Simulated Link Bar with Quick Switch -->
+        <div id="top-live-link-bar" class="hidden md:flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 space-x-2">
+            <span class="text-xs font-semibold text-slate-400">Podgląd Tworzonego Sklepu:</span>
+            <div class="flex items-center space-x-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-mono text-blue-600">
+                <i class="fa-solid fa-globe text-slate-400 text-[10px]"></i>
+                <span id="live-store-url-text">Strona Gotowa do Generowania</span>
+            </div>
+            <button onclick="openStoreInNewWindow()" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition text-xs font-semibold flex items-center space-x-1">
+                <span>Otwórz Sklep w Nowej Karcie</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </button>
+        </div>
+
+        <!-- Mode Switcher Tabs -->
+        <div class="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button id="btn-mode-admin" onclick="switchView('admin')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-2 transition bg-white text-slate-800 shadow-sm border border-slate-200">
+                <i class="fa-solid fa-sliders text-blue-600 text-xs"></i>
+                <span>Kreator</span>
+            </button>
+            <button id="btn-mode-store" onclick="switchView('store')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-2 transition text-slate-600 hover:text-slate-900">
+                <i class="fa-solid fa-shop text-xs"></i>
+                <span>Szybki Podgląd</span>
+            </button>
+            <button id="btn-mode-orders" onclick="switchView('orders')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-2 transition text-slate-600 hover:text-slate-900">
+                <i class="fa-solid fa-receipt text-xs"></i>
+                <span>Zamówienia</span>
+            </button>
+            <button id="btn-mode-stats" onclick="switchView('stats')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-2 transition text-slate-600 hover:text-slate-900">
+                <i class="fa-solid fa-chart-line text-xs"></i>
+                <span>Statystyki</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: KREATOR SKLEPU (ADMIN STUDIO)      -->
+        <!-- ========================================== -->
+        <div id="view-admin" class="flex-1 flex flex-col lg:flex-row overflow-hidden w-full bg-slate-50">
+            <!-- Sidebar Navigation Tabs -->
+            <aside class="w-full lg:w-64 bg-white border-r border-slate-200 flex flex-row lg:flex-col p-3 space-x-2 lg:space-x-0 lg:space-y-1 shrink-0 overflow-x-auto shadow-sm">
+                <button onclick="setAdminSubTab('branding')" id="tab-btn-branding" class="admin-tab-btn active w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 transition">
+                    <i class="fa-solid fa-palette text-blue-600 w-4"></i>
+                    <span class="font-semibold">Wygląd, Logo & Baner</span>
+                </button>
+                <button onclick="setAdminSubTab('products')" id="tab-btn-products" class="admin-tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-box text-slate-500 w-4"></i>
+                    <span>Produkty i Magazyn</span>
+                </button>
+                <button onclick="setAdminSubTab('details')" id="tab-btn-details" class="admin-tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-store text-slate-500 w-4"></i>
+                    <span>Dane Firmy & Kontakt</span>
+                </button>
+                <button onclick="setAdminSubTab('discounts')" id="tab-btn-discounts" class="admin-tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-ticket text-slate-500 w-4"></i>
+                    <span>Kody Rabatowe</span>
+                </button>
+                <button onclick="setAdminSubTab('pages')" id="tab-btn-pages" class="admin-tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-bars text-slate-500 w-4"></i>
+                    <span>Zakładki Nawigacji</span>
+                </button>
+                <button onclick="setAdminSubTab('shipping')" id="tab-btn-shipping" class="admin-tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-truck text-slate-500 w-4"></i>
+                    <span>Dostawa & Płatności</span>
+                </button>
+            </aside>
+
+            <!-- Admin Editor Main Content -->
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8 pb-28">
+
+                <!-- SUB-TAB 1: BRANDING, LOGO & HERO BANNER -->
+                <div id="subtab-branding" class="admin-subtab space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                <i class="fa-solid fa-palette text-blue-600"></i>
+                                <span>Identyfikacja Sklepu & Wygląd</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Ustaw nazwę sklepu, wgraj logo oraz dostosuj baner używając zdjęć ze swojej galerii.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Shop Name & Color -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nazwa Twojego Sklepu</label>
+                                    <input type="text" id="cfg-shop-name" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-blue-600 text-slate-900 font-medium" placeholder="np. Mój Sklep Odzieżowy">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Slogan Sklepu</label>
+                                    <input type="text" id="cfg-shop-tagline" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-blue-600 text-slate-900" placeholder="np. Najwyższa jakość w dobrej cenie">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Główny Kolor Akcentów</label>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="color" id="cfg-shop-color" onchange="updateShopConfig()" class="h-10 w-20 bg-slate-50 border border-slate-300 rounded-xl cursor-pointer p-1">
+                                        <span class="text-xs text-slate-500">Kolor przycisków i nagłówków</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Logo Uploader from Local Gallery -->
+                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700">Logo Sklepu (Z Twojej Galerii)</label>
+                                
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-20 h-20 bg-white border border-slate-300 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative">
+                                        <img id="preview-logo-img" src="" class="w-full h-full object-cover">
+                                        <span id="logo-placeholder-text" class="text-[10px] text-slate-400 text-center px-1">Brak logo</span>
+                                    </div>
+                                    
+                                    <div class="space-y-2 flex-1">
+                                        <label class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-sm transition">
+                                            <i class="fa-solid fa-image text-sm"></i>
+                                            <span>Wybierz zdjęcie z telefonu</span>
+                                            <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'logo')">
+                                        </label>
+                                        <p class="text-[11px] text-slate-500">Format PNG lub JPG z galerii.</p>
+                                        <button onclick="clearLogo()" class="text-[11px] text-rose-600 hover:underline block">Usuń logo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hero Banner Section Editor -->
+                        <div class="pt-4 border-t border-slate-100 space-y-4">
+                            <h3 class="font-bold text-sm text-slate-900">Baner Główny (Sekcja Górna)</h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tytuł Baneru</label>
+                                        <input type="text" id="cfg-banner-title" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm text-slate-900">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-1">Podtytuł Baneru</label>
+                                        <textarea id="cfg-banner-subtitle" oninput="updateShopConfig()" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm text-slate-900"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Banner Photo Upload -->
+                                <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <label class="block text-xs font-bold text-slate-700">Zdjęcie Baneru z Galerii Urządzenia</label>
+                                    
+                                    <div class="h-28 bg-white border border-slate-300 rounded-xl overflow-hidden relative shadow-sm flex items-center justify-center">
+                                        <img id="preview-banner-img" src="" class="w-full h-full object-cover">
+                                        <span id="banner-placeholder-text" class="text-xs text-slate-400">Brak zdjęcia baneru</span>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <label class="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl cursor-pointer transition">
+                                            <i class="fa-solid fa-file-image"></i>
+                                            <span>Wybierz baner z galerii</span>
+                                            <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'banner')">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2: PRODUCTS MANAGER -->
+                <div id="subtab-products" class="admin-subtab hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                    <i class="fa-solid fa-box text-blue-600"></i>
+                                    <span>Katalog Produktów</span>
+                                </h2>
+                                <p class="text-xs text-slate-500 mt-1">Zarządzaj ofertą sklepu. Dodawaj własne zdjęcia przedmiotów prosto z urządzenia.</p>
+                            </div>
+                            <button onclick="openProductModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-sm">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Dodaj Nowy Produkt</span>
+                            </button>
+                        </div>
+
+                        <!-- Products List Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="admin-products-list">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: COMPANY DETAILS & CONTACT -->
+                <div id="subtab-details" class="admin-subtab hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                <i class="fa-solid fa-store text-blue-600"></i>
+                                <span>Dane Sklepu i Kontakt dla Klientów</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Te dane pojawią się w stopce sklepu oraz na stronie kontaktowej.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Adres Email Sklepu</label>
+                                    <input type="email" id="cfg-contact-email" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900" placeholder="kontakt@twojsklep.pl">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Telefon Kontaktowy</label>
+                                    <input type="text" id="cfg-contact-phone" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900" placeholder="+48 123 456 789">
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Adres Siedziby</label>
+                                    <input type="text" id="cfg-contact-address" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900" placeholder="ul. Prosta 10, Warszawa">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Polityka / Informacje o Zwrotach</label>
+                                    <textarea id="cfg-policy-text" oninput="updateShopConfig()" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900" placeholder="Klienci mają 14 dni na darmowy zwrot towaru..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 4: DISCOUNT CODES -->
+                <div id="subtab-discounts" class="admin-subtab hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                <i class="fa-solid fa-ticket text-blue-600"></i>
+                                <span>Kody Rabatowe</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Twórz kupony zniżkowe dla klientów.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 items-end">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Kod Kuponu (np. PROMO10)</label>
+                                <input type="text" id="new-coupon-code" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs uppercase text-slate-900 font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Zniżka (%)</label>
+                                <input type="number" id="new-coupon-discount" min="1" max="100" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900" value="10">
+                            </div>
+                            <button onclick="addDiscountCoupon()" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                                Dodaj Kod Rabatowy
+                            </button>
+                        </div>
+
+                        <div class="space-y-2" id="coupons-list-container">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 5: PAGES -->
+                <div id="subtab-pages" class="admin-subtab hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                <i class="fa-solid fa-bars text-blue-600"></i>
+                                <span>Zakładki w Nawigacji Sklepu</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Dodawaj strony takie jak: O nas, FAQ czy Regulamin.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <h3 class="font-bold text-xs text-slate-800">Nowa Strona</h3>
+                                <div>
+                                    <label class="block text-xs text-slate-600 mb-1">Nazwa Zakładki</label>
+                                    <input type="text" id="new-page-title" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900" placeholder="np. O Nas">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-600 mb-1">Treść Strony</label>
+                                    <textarea id="new-page-content" rows="4" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900" placeholder="Treść widoczna dla kupujących..."></textarea>
+                                </div>
+                                <button onclick="addCustomPage()" class="w-full py-2 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-slate-800 transition">
+                                    Dodaj do Menu
+                                </button>
+                            </div>
+
+                            <div class="space-y-2" id="pages-list-container">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 6: SHIPPING -->
+                <div id="subtab-shipping" class="admin-subtab hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                                <i class="fa-solid fa-truck text-blue-600"></i>
+                                <span>Dostawa i Płatności</span>
+                            </h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Waluta Sklepu</label>
+                                    <input type="text" id="cfg-currency" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900" value="zł">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Koszt Dostawy</label>
+                                    <input type="number" step="0.01" id="cfg-shipping-cost" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Darmowa Dostawa Od (zł)</label>
+                                    <input type="number" id="cfg-free-shipping" oninput="updateShopConfig()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900">
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <span class="block text-xs font-bold text-slate-800">Aktywne Płatności</span>
+                                <label class="flex items-center space-x-2 text-xs text-slate-700">
+                                    <input type="checkbox" checked disabled class="rounded text-blue-600">
+                                    <span>Szybki Przelew / BLIK</span>
+                                </label>
+                                <label class="flex items-center space-x-2 text-xs text-slate-700">
+                                    <input type="checkbox" checked disabled class="rounded text-blue-600">
+                                    <span>Karta Płatnicza</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky Action Toolbar at bottom -->
+            <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-40 shadow-lg flex items-center justify-between px-6 lg:px-12">
+                <div class="flex items-center space-x-3">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Tryb edycji gotowy</span>
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="resetStoreToDefault()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                        Reset
+                    </button>
+                    <button onclick="openStoreInNewWindow()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Otwórz Sklep w Prawdziwym Oknie</span>
+                    </button>
+                    <button onclick="saveAndShowLinkModal()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>Zapisz & Wygeneruj Gotowy Sklep</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: PODGLĄD SKLEPU (LIVE STORE)        -->
+        <!-- ========================================== -->
+        <div id="view-store" class="flex-1 flex flex-col overflow-y-auto hidden bg-white">
+
+            <!-- Real Store Header Notification -->
+            <div class="bg-blue-50 px-4 py-2 border-b border-blue-200 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2 text-xs text-blue-800 font-medium">
+                    <i class="fa-solid fa-circle-info text-blue-600"></i>
+                    <span>To jest natychmiastowy podgląd roboczy Twojego sklepu. Wszystkie zakupy i koszyk działają w pełni!</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="openStoreInNewWindow()" class="text-xs text-blue-700 hover:underline font-bold flex items-center space-x-1">
+                        <i class="fa-solid fa-window-restore"></i>
+                        <span>Otwórz jako niezależną stronę</span>
+                    </button>
+                    <button onclick="switchView('admin')" class="text-xs text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1">
+                        <i class="fa-solid fa-pen"></i>
+                        <span>Edytuj w Kreatorze</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-auto border-t border-slate-200 bg-slate-50 py-8 px-6 text-slate-600 text-xs space-y-4">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <span id="footer-shop-name" class="font-bold text-slate-900 text-sm block mb-1"></span>
+                        <p id="footer-shop-tagline" class="text-slate-500"></p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-900 block mb-1">Kontakt</span>
+                        <p id="footer-contact-info" class="space-y-0.5 text-slate-500"></p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-900 block mb-1">Bezpieczne Płatności</span>
+                        <div class="flex space-x-3 text-slate-400 text-lg pt-1">
+                            <i class="fa-brands fa-cc-visa"></i>
+                            <i class="fa-brands fa-cc-mastercard"></i>
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: ZAMÓWIENIA KLIENTÓW               -->
+        <!-- ========================================== -->
+        <div id="view-orders" class="flex-1 p-6 lg:p-10 overflow-y-auto space-y-6 hidden bg-slate-50">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-receipt text-blue-600"></i>
+                            <span>Nadeszłe Zamówienia</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Lista zakupów złożonych przez klientów w sklepie.</p>
+                    </div>
+                    <button onclick="clearOrders()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl border border-rose-200 transition">
+                        Wyczyszczenie historii
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden card-shadow">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-xs text-slate-500 uppercase font-semibold border-b border-slate-200">
+                                <th class="p-4">ID / Data</th>
+                                <th class="p-4">Klient</th>
+                                <th class="p-4">Produkty</th>
+                                <th class="p-4">Wartość</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Zmień Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: ANALITYKA                          -->
+        <!-- ========================================== -->
+        <div id="view-stats" class="flex-1 p-6 lg:p-10 overflow-y-auto space-y-8 hidden bg-slate-50">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line text-blue-600"></i>
+                        <span>Analityka i Statystyki Sprzedaży</span>
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Łączny Przychód</span>
+                        <span id="stat-revenue" class="text-2xl font-extrabold text-slate-900 block mt-1">0.00 zł</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Liczba Zamówień</span>
+                        <span id="stat-orders-count" class="text-2xl font-extrabold text-slate-900 block mt-1">0</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Liczba Produktów</span>
+                        <span id="stat-total-products" class="text-2xl font-extrabold text-slate-900 block mt-1">0</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4">Wykres Sprzedaży</h3>
+                    <div class="h-64">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: ADD / EDIT PRODUCT -->
+    <div id="modal-product" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900" id="modal-product-title">Dodaj Produkt</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="product-form" onsubmit="saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="prod-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nazwa Przedmiotu</label>
+                    <input type="text" id="prod-title" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Cena (zł)</label>
+                        <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kategoria</label>
+                        <input type="text" id="prod-category" placeholder="np. Odzież" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900">
+                    </div>
+                </div>
+
+                <!-- Image Uploader from Gallery -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                    <label class="block text-xs font-bold text-slate-700">Zdjęcie z Galerii Urządzenia</label>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-16 h-16 bg-white border border-slate-300 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
+                            <img id="prod-preview-img" src="" class="w-full h-full object-cover hidden">
+                            <i id="prod-preview-icon" class="fa-solid fa-box text-slate-300"></i>
+                        </div>
+                        <label class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl cursor-pointer transition">
+                            <span>Wybierz zdjęcie z galerii</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleProductImageUpload(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Opis Produktu</label>
+                    <textarea id="prod-desc" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl">Anuluj</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm">Zapisz Produkt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CART & CHECKOUT -->
+    <div id="modal-cart" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 border border-slate-200 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+                <h3 class="text-base font-bold text-slate-900">Koszyk Zakupowy</h3>
+                <button onclick="closeCartModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-3 pr-1" id="cart-items-container">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex space-x-2 shrink-0">
+                <input type="text" id="cart-coupon-input" placeholder="Kod rabatowy..." class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs uppercase font-semibold">
+                <button onclick="applyDiscountCoupon()" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-900">Użyj</button>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 shrink-0 space-y-3">
+                <div class="text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500">
+                        <span>Suma:</span>
+                        <span id="cart-subtotal-val">0.00 zł</span>
+                    </div>
+                    <div id="cart-discount-row" class="flex justify-between text-emerald-600 hidden">
+                        <span>Zniżka:</span>
+                        <span id="cart-discount-val">-0.00 zł</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500">
+                        <span>Dostawa:</span>
+                        <span id="cart-shipping-val">0.00 zł</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
+                        <span>Razem:</span>
+                        <span id="cart-total-val" class="text-blue-600">0.00 zł</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2 border-t border-slate-200">
+                    <input type="text" id="checkout-name" placeholder="Imię i Nazwisko" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs">
+                    <input type="email" id="checkout-email" placeholder="Adres Email" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs">
+                    <input type="text" id="checkout-address" placeholder="Adres dostawy" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs">
+                </div>
+
+                <button onclick="processOrderSubmit()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-md">
+                    Złóż Zamówienie
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: STORE LINK & DEPLOYMENT INSTRUCTIONS -->
+    <div id="modal-generated-link" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div class="text-center space-y-1">
+                <h3 class="text-lg font-extrabold text-slate-900">Twój Sklep Został Stworzony!</h3>
+                <p class="text-xs text-slate-500">Oto co możesz teraz zrobić z gotową witryną:</p>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                <div class="space-y-1">
+                    <span class="text-xs font-bold text-slate-900 block">1. Otwórz w Nowym Oknie Przeglądarki</span>
+                    <p class="text-[11px] text-slate-600">Kliknij przycisk poniżej, a Twój sklep natychmiast otworzy się jako osobiście działająca strona internetowa w osobnej karcie!</p>
+                </div>
+                <div class="space-y-1 pt-2 border-t border-slate-200">
+                    <span class="text-xs font-bold text-slate-900 block">2. Pobierz Gotowy Plik Sklepu (.html)</span>
+                    <p class="text-[11px] text-slate-600">Możesz go wysłać komuś, zapisać na telefonie lub wrzucić na darmowy hosting (np. Netlify lub Vercel), aby udostępnić go całemu światu!</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2 pt-2">
+                <button onclick="exportFullStoreHtml()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 transition">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Pobierz Plik Sklepu</span>
+                </button>
+                <button onclick="openStoreInNewWindow()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center space-x-1.5 transition">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>Otwórz Prawdziwy Sklep</span>
+                </button>
+            </div>
+            <button onclick="closeLinkModal()" class="w-full text-center text-xs text-slate-400 hover:text-slate-600 py-1">
+                Zamknij i wróć do edycji
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="fixed bottom-20 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-semibold">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+        <span id="toast-message">Zapisano zmiany!</span>
+    </div>
+
+    <script>
+        /* State Variables */
+        let shopConfig = {
+            name: "Mój Nowy Sklep",
+            slug: "moj-sklep",
+            tagline: "Twój sklep internetowy",
+            logoData: "",
+            bannerData: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200",
+            primaryColor: "#0284c7",
+            bannerTitle: "Witaj w naszym nowym sklepie!",
+            bannerSubtitle: "Przeglądaj wyselekcjonowane produkty wysokiej jakości.",
+            email: "kontakt@twojsklep.pl",
+            phone: "+48 123 456 789",
+            address: "Warszawa, Polska",
+            policy: "Klienci mają prawo do zwrotu w ciągu 14 dni.",
+            currency: "zł",
+            shippingCost: 14.99,
+            freeShippingThreshold: 200
+        };
+
+        let products = [
+            {
+                id: "p1",
+                title: "Elegancki Zegarek Classic",
+                price: 249.00,
+                category: "Akcesoria",
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+                desc: "Stylowy zegarek z czarną tarczą i skórzanym paskiem."
+            },
+            {
+                id: "p2",
+                title: "Słuchawki Bezprzewodowe Pro",
+                price: 199.99,
+                category: "Elektronika",
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+                desc: "Wysoka jakość dźwięku oraz aktywna redukcja szumów."
+            }
+        ];
+
+        let discountCoupons = [{ code: "START10", discountPercent: 10 }];
+        let customPages = [{ id: "page_about", title: "O Nas", content: "Jesteśmy dynamicznie rozwijającą się marką, oferującą najwyższą jakość produktów." }];
+        let orders = [];
+        let cart = [];
+        let activeAppliedCoupon = null;
+        let tempProductImageData = "";
+        let salesChartInstance = null;
+
+        /* Initialization */
+        window.onload = function() {
+            loadFromLocalStorage();
+            populateAdminInputs();
+            renderAdminProducts();
+            renderCouponsList();
+            renderPagesList();
+            renderStoreNavLinks();
+            renderStoreProducts();
+            renderOrdersTable();
+            updateCartUI();
+            initAnalyticsChart();
+            generateStoreUrl();
+        };
+
+        /* LocalStorage Persistence */
+        function saveToLocalStorage() {
+            localStorage.setItem("skiteshop_cfg", JSON.stringify(shopConfig));
+            localStorage.setItem("skiteshop_prods", JSON.stringify(products));
+            localStorage.setItem("skiteshop_coupons", JSON.stringify(discountCoupons));
+            localStorage.setItem("skiteshop_pages", JSON.stringify(customPages));
+            localStorage.setItem("skiteshop_orders", JSON.stringify(orders));
+        }
+
+        function loadFromLocalStorage() {
+            const cfg = localStorage.getItem("skiteshop_cfg");
+            const prods = localStorage.getItem("skiteshop_prods");
+            const coup = localStorage.getItem("skiteshop_coupons");
+            const pgs = localStorage.getItem("skiteshop_pages");
+            const ords = localStorage.getItem("skiteshop_orders");
+
+            if (cfg) shopConfig = JSON.parse(cfg);
+            if (prods) products = JSON.parse(prods);
+            if (coup) discountCoupons = JSON.parse(coup);
+            if (pgs) customPages = JSON.parse(pgs);
+            if (ords) orders = JSON.parse(ords);
+        }
+
+        /* Local Image Reader */
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                if (type === 'logo') {
+                    shopConfig.logoData = dataUrl;
+                    updateLogoPreview();
+                } else if (type === 'banner') {
+                    shopConfig.bannerData = dataUrl;
+                    updateBannerPreview();
+                }
+                saveToLocalStorage();
+                showToast("Zdjęcie wgrane pomyślnie z galerii!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleProductImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempProductImageData = e.target.result;
+                const imgEl = document.getElementById("prod-preview-img");
+                const iconEl = document.getElementById("prod-preview-icon");
+                imgEl.src = tempProductImageData;
+                imgEl.classList.remove("hidden");
+                iconEl.classList.add("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearLogo() {
+            shopConfig.logoData = "";
+            updateLogoPreview();
+            saveToLocalStorage();
+        }
+
+        function updateLogoPreview() {
+            const logoImg = document.getElementById("preview-logo-img");
+            const placeholder = document.getElementById("logo-placeholder-text");
+            if (shopConfig.logoData) {
+                logoImg.src = shopConfig.logoData;
+                logoImg.classList.remove("hidden");
+                placeholder.classList.add("hidden");
+            } else {
+                logoImg.classList.add("hidden");
+                placeholder.classList.remove("hidden");
+            }
+        }
+
+        function updateBannerPreview() {
+            const bannerImg = document.getElementById("preview-banner-img");
+            const placeholder = document.getElementById("banner-placeholder-text");
+            if (shopConfig.bannerData) {
+                bannerImg.src = shopConfig.bannerData;
+                bannerImg.classList.remove("hidden");
+                placeholder.classList.add("hidden");
+            } else {
+                bannerImg.classList.add("hidden");
+                placeholder.classList.remove("hidden");
+            }
+        }
+
+        /* Store Config Updates */
+        function populateAdminInputs() {
+            document.getElementById("cfg-shop-name").value = shopConfig.name;
+            document.getElementById("cfg-shop-tagline").value = shopConfig.tagline;
+            document.getElementById("cfg-shop-color").value = shopConfig.primaryColor;
+            document.getElementById("cfg-banner-title").value = shopConfig.bannerTitle;
+            document.getElementById("cfg-banner-subtitle").value = shopConfig.bannerSubtitle;
+            document.getElementById("cfg-contact-email").value = shopConfig.email;
+            document.getElementById("cfg-contact-phone").value = shopConfig.phone;
+            document.getElementById("cfg-contact-address").value = shopConfig.address;
+            document.getElementById("cfg-policy-text").value = shopConfig.policy;
+            document.getElementById("cfg-currency").value = shopConfig.currency;
+            document.getElementById("cfg-shipping-cost").value = shopConfig.shippingCost;
+            document.getElementById("cfg-free-shipping").value = shopConfig.freeShippingThreshold;
+
+            updateLogoPreview();
+            updateBannerPreview();
+        }
+
+        function updateShopConfig() {
+            shopConfig.name = document.getElementById("cfg-shop-name").value || "Mój Sklep";
+            shopConfig.tagline = document.getElementById("cfg-shop-tagline").value;
+            shopConfig.primaryColor = document.getElementById("cfg-shop-color").value;
+            shopConfig.bannerTitle = document.getElementById("cfg-banner-title").value;
+            shopConfig.bannerSubtitle = document.getElementById("cfg-banner-subtitle").value;
+            shopConfig.email = document.getElementById("cfg-contact-email").value;
+            shopConfig.phone = document.getElementById("cfg-contact-phone").value;
+            shopConfig.address = document.getElementById("cfg-contact-address").value;
+            shopConfig.policy = document.getElementById("cfg-policy-text").value;
+            shopConfig.currency = document.getElementById("cfg-currency").value || "zł";
+            shopConfig.shippingCost = parseFloat(document.getElementById("cfg-shipping-cost").value) || 0;
+            shopConfig.freeShippingThreshold = parseFloat(document.getElementById("cfg-free-shipping").value) || 0;
+
+            generateStoreUrl();
+            saveToLocalStorage();
+        }
+
+        function generateStoreUrl() {
+            const cleanSlug = shopConfig.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+            shopConfig.slug = cleanSlug || "sklep";
+            document.getElementById("live-store-url-text").innerText = `${shopConfig.name} (Gotowy do Otwarcia)`;
+        }
+
+        /* Generate standalone, 100% self-contained HTML page and open in new tab */
+        function openStoreInNewWindow() {
+            updateShopConfig();
+            const generatedHtml = buildStandaloneStoreHtml();
+            const blob = new Blob([generatedHtml], { type: "text/html;charset=utf-8" });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+            showToast("Otwarto Twój sklep w nowym oknie!");
+        }
+
+        /* Build full HTML string for standalone store */
+        function buildStandaloneStoreHtml() {
+            return `<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${shopConfig.name}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans antialiased bg-white text-slate-800 min-h-screen flex flex-col">
+    <nav class="sticky top-0 z-20 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            ${shopConfig.logoData ? `<img src="${shopConfig.logoData}" class="w-10 h-10 rounded-xl object-cover">` : `<div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-bag-shopping"></i></div>`}
+            <div>
+                <span class="font-extrabold text-slate-900 text-xl block leading-tight">${shopConfig.name}</span>
+                <span class="text-xs text-slate-500 block">${shopConfig.tagline}</span>
+            </div>
+        </div>
+        <div class="text-xs font-semibold text-slate-500 hidden sm:block">
+            Wygenerowano przez SkiteShop Studio
+        </div>
+    </nav>
+
+    <main class="flex-1 space-y-8 pb-16">
+        <div class="relative bg-cover bg-center min-h-[320px] flex items-center justify-center p-8 text-center bg-slate-100 border-b border-slate-200" style="${shopConfig.bannerData ? `background-image: url('${shopConfig.bannerData}');` : ''}">
+            <div class="relative z-10 max-w-2xl space-y-3 bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-white/50 shadow-lg">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900">${shopConfig.bannerTitle}</h1>
+                <p class="text-slate-600 text-sm">${shopConfig.bannerSubtitle}</p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-200 pb-3">Katalog Oferty</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                ${products.map(p => `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+                        <div>
+                            <img src="${p.image}" class="w-full h-48 object-cover">
+                            <div class="p-4 space-y-1.5">
+                                <span class="text-[10px] font-bold uppercase text-blue-600">${p.category}</span>
+                                <h3 class="font-bold text-slate-900 text-sm">${p.title}</h3>
+                                <p class="text-xs text-slate-500 line-clamp-2">${p.desc}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
+                            <span class="text-base font-extrabold text-slate-900">${p.price.toFixed(2)} ${shopConfig.currency}</span>
+                            <button onclick="alert('Dziękujemy za zainteresowanie! Aby zamówić, skontaktuj się pod adresem: ${shopConfig.email}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">Kup teraz</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto border-t border-slate-200 bg-slate-50 py-8 px-6 text-slate-600 text-xs">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <span class="font-bold text-slate-900 text-sm block mb-1">${shopConfig.name}</span>
+                <p class="text-slate-500">${shopConfig.tagline}</p>
+            </div>
+            <div>
+                <span class="font-bold text-slate-900 block mb-1">Kontakt</span>
+                <p class="text-slate-500">Email: ${shopConfig.email}<br>Tel: ${shopConfig.phone}<br>Adres: ${shopConfig.address}</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>`;
+        }
+
+        /* Export Store HTML File */
+        function exportFullStoreHtml() {
+            const htmlContent = buildStandaloneStoreHtml();
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${shopConfig.slug}-sklep.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("Pobrano kompletny plik sklepu HTML!");
+        }
+
+        function resetStoreToDefault() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast-notification");
+            document.getElementById("toast-message").innerText = msg;
+            toast.classList.remove("translate-y-20", "opacity-0");
+            setTimeout(() => {
+                toast.classList.add("translate-y-20", "opacity-0");
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
